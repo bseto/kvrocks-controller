@@ -134,6 +134,10 @@ func TestClusterBasics(t *testing.T) {
 		body, err := json.Marshal(testMigrateReq)
 		require.NoError(t, err)
 		ctx.Request.Body = io.NopCloser(bytes.NewBuffer(body))
+
+		// db, mock := redismock.NewClientMock()
+		// the db node isn't really dependency injectable right now.....
+
 		cluster, err := store.NewCluster(clusterName, []string{"127.0.0.1:1111", "127.0.0.1:2222"}, 1)
 		require.NoError(t, err)
 		require.NoError(t, handler.s.CreateCluster(ctx, ns, cluster))

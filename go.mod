@@ -25,6 +25,11 @@ require (
 )
 
 require (
+	github.com/go-redis/redismock/v9 v9.2.0 // indirect
+	github.com/redis/go-redis/v9 v9.2.0 // indirect
+)
+
+require (
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.13.1 // indirect

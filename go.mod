@@ -25,7 +25,7 @@ require (
 )
 
 require (
-	github.com/go-redis/redismock/v9 v9.2.0 // indirect
+	github.com/go-redis/redismock/v8 v8.11.5 // indirect
 	github.com/redis/go-redis/v9 v9.2.0 // indirect
 )
 

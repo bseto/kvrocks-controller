@@ -132,7 +132,8 @@ func (cluster *Cluster) RemoveNode(shardIndex int, nodeID string) error {
 }
 
 func (cluster *Cluster) PromoteNewMaster(ctx context.Context,
-	shardIdx int, masterNodeID, preferredNodeID string) (string, error) {
+	shardIdx int, masterNodeID, preferredNodeID string,
+) (string, error) {
 	shard, err := cluster.GetShard(shardIdx)
 	if err != nil {
 		return "", err
@@ -212,19 +213,24 @@ func (cluster *Cluster) MigrateSlot(ctx context.Context, slot int, targetShardId
 		return nil
 	}
 
+	fmt.Println("checking migration")
 	if cluster.Shards[sourceShardIdx].IsMigrating() || cluster.Shards[targetShardIdx].IsMigrating() {
 		return consts.ErrShardSlotIsMigrating
 	}
+	fmt.Println("sending to source node")
 	// Send the migration command to the source node
 	sourceMasterNode := cluster.Shards[sourceShardIdx].GetMasterNode()
 	if sourceMasterNode == nil {
 		return consts.ErrNotFound
 	}
+	fmt.Println("getting master node")
 	targetNodeID := cluster.Shards[targetShardIdx].GetMasterNode().ID()
+	fmt.Printf("got master node: %v, type: %T\n", targetNodeID, sourceMasterNode)
 	if err := sourceMasterNode.MigrateSlot(ctx, slot, targetNodeID); err != nil {
 		return err
 	}
 
+	fmt.Println("starting in the background...")
 	// Will start the data migration in the background
 	cluster.Shards[sourceShardIdx].MigratingSlot = slot
 	cluster.Shards[sourceShardIdx].TargetShardIndex = targetShardIdx

@@ -127,14 +127,13 @@ func TestClusterBasics(t *testing.T) {
 		ctx.Set(consts.ContextKeyStore, handler.s)
 		ctx.Params = []gin.Param{{Key: "namespace", Value: ns}, {Key: "cluster", Value: clusterName}}
 		testMigrateReq := &MigrateSlotRequest{
-			Slot:     3,
-			SlotOnly: true,
-			Target:   1,
+			Slot: 3,
+			// SlotOnly: true, // byron: we can't run SlotOnly: false because we have no real kvrocks running
+			Target: 1,
 		}
 		body, err := json.Marshal(testMigrateReq)
 		require.NoError(t, err)
 		ctx.Request.Body = io.NopCloser(bytes.NewBuffer(body))
-
 		cluster, err := store.NewCluster(clusterName, []string{"127.0.0.1:1111", "127.0.0.1:2222"}, 1)
 		require.NoError(t, err)
 		require.NoError(t, handler.s.CreateCluster(ctx, ns, cluster))
@@ -163,7 +162,6 @@ func TestClusterBasics(t *testing.T) {
 		runRemove(t, "test-cluster", http.StatusNoContent)
 		runRemove(t, "not-exist", http.StatusNotFound)
 	})
-
 }
 
 func TestClusterImport(t *testing.T) {
@@ -255,7 +253,8 @@ func TestClusterMigrateData(t *testing.T) {
 		FailOver: &config.FailOverConfig{
 			PingIntervalSeconds: 1,
 			MaxPingCount:        3,
-		}})
+		},
+	})
 	require.NoError(t, err)
 	require.NoError(t, ctrl.Start(ctx))
 	ctrl.WaitForReady()

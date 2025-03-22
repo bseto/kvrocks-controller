@@ -22,6 +22,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -129,6 +130,7 @@ func (handler *ClusterHandler) MigrateSlot(c *gin.Context) {
 
 	err := cluster.MigrateSlot(c, req.Slot, req.Target, req.SlotOnly)
 	if err != nil {
+		fmt.Println("migrate slot error?")
 		helper.ResponseError(c, err)
 		return
 	}
@@ -136,6 +138,7 @@ func (handler *ClusterHandler) MigrateSlot(c *gin.Context) {
 	if req.SlotOnly {
 		err = handler.s.UpdateCluster(c, namespace, cluster)
 	} else {
+		fmt.Println("plz?")
 		// The version should be increased after the slot migration is done
 		err = handler.s.SetCluster(c, namespace, cluster)
 	}

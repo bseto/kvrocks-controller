@@ -256,7 +256,10 @@ func (n *ClusterNode) Reset(ctx context.Context) error {
 }
 
 func (n *ClusterNode) MigrateSlot(ctx context.Context, slot int, targetNodeID string) error {
-	return n.GetClient().Do(ctx, "CLUSTERX", "MIGRATE", slot, targetNodeID).Err()
+	fmt.Println("i'm here...")
+	c := n.GetClient()
+	fmt.Printf("c is : %T\n", c)
+	return c.Do(ctx, "CLUSTERX", "MIGRATE", slot, targetNodeID).Err()
 }
 
 func (n *ClusterNode) MarshalJSON() ([]byte, error) {

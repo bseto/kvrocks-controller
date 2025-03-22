@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/go-redis/redismock/v8"
 	"github.com/stretchr/testify/require"
 
@@ -128,9 +129,9 @@ func TestClusterBasics(t *testing.T) {
 		ctx.Set(consts.ContextKeyStore, handler.s)
 		ctx.Params = []gin.Param{{Key: "namespace", Value: ns}, {Key: "cluster", Value: clusterName}}
 		testMigrateReq := &MigrateSlotRequest{
-			Slot:     3,
-			SlotOnly: true, // byron: we can't run SlotOnly: false because we have no real kvrocks running
-			Target:   1,
+			Slot: 3,
+			// SlotOnly: true, // byron: we can't run SlotOnly: false because we have no real kvrocks running
+			Target: 1,
 		}
 		body, err := json.Marshal(testMigrateReq)
 		require.NoError(t, err)
@@ -148,10 +149,13 @@ func TestClusterBasics(t *testing.T) {
 		// going to do this manually just to sanity check
 		db1, _ := redismock.NewClientMock()
 		db2, _ := redismock.NewClientMock()
-		db3, _ := redismock.NewClientMock()
-		db4, _ := redismock.NewClientMock()
-		// the db node isn't really dependency injectable right now.....
-		store.ByronAddClient(db1, db2, db3, db4)
+		dbs := []*redis.Client{db1, db2}
+		nodes := before.GetNodes()
+
+		for n, node := range nodes {
+			id := node.(*store.ClusterNode).ID()
+			store.ByronAddClient(id, dbs[n])
+		}
 
 		middleware.RequiredCluster(ctx)
 		handler.MigrateSlot(ctx)

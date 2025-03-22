@@ -140,19 +140,12 @@ func (n *ClusterNode) IsMaster() bool {
 	return n.role == RoleMaster
 }
 
-func ByronAddClient(redisClients ...*redis.Client) {
-	n := 0
-	clients.Range(func(key, value any) bool {
-		if n > len(redisClients) {
-			return false
-		}
-		clients.Store(key, redisClients[n])
-		n++
-		return true
-	})
+func ByronAddClient(key string, client *redis.Client) {
+	clients.Store(key, client)
 }
 
 func (n *ClusterNode) GetClient() *redis.Client {
+	fmt.Printf("client ID: %v\n", n.ID())
 	if client, ok := clients.Load(n.ID()); ok {
 		if rdsClient, ok := client.(*redis.Client); ok {
 			return rdsClient

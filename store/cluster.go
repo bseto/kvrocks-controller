@@ -227,6 +227,7 @@ func (cluster *Cluster) MigrateSlot(ctx context.Context, slot int, targetShardId
 	targetNodeID := cluster.Shards[targetShardIdx].GetMasterNode().ID()
 	fmt.Printf("got master node: %v, type: %T\n", targetNodeID, sourceMasterNode)
 	if err := sourceMasterNode.MigrateSlot(ctx, slot, targetNodeID); err != nil {
+		fmt.Printf("got err: %v\n", err)
 		return err
 	}
 

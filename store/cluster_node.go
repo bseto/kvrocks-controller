@@ -141,12 +141,15 @@ func (n *ClusterNode) IsMaster() bool {
 }
 
 func (n *ClusterNode) GetClient() *redis.Client {
+	fmt.Printf("trying to get client: %v\n", n.ID())
 	if client, ok := clients.Load(n.ID()); ok {
+		fmt.Printf("got something: %T\n", client)
 		if rdsClient, ok := client.(*redis.Client); ok {
 			return rdsClient
 		}
 	}
 
+	fmt.Printf("making a new client\n")
 	client := redis.NewClient(&redis.Options{
 		Addr:         n.addr,
 		Password:     n.password,

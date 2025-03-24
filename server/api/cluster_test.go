@@ -159,11 +159,54 @@ func TestClusterBasics(t *testing.T) {
 		require.EqualValues(t, store.SlotRange{Start: 8192, Stop: store.MaxSlotID}, after.Shards[1].SlotRanges[1])
 	})
 
+	t.Run("migrate parallel", func(t *testing.T) {
+		handler := &ClusterHandler{s: store.NewClusterStore(engine.NewMock())}
+		clusterName := "test-migrate-cluster"
+		recorder := httptest.NewRecorder()
+		ctx := GetTestContext(recorder)
+		ctx.Set(consts.ContextKeyStore, handler.s)
+		ctx.Params = []gin.Param{{Key: "namespace", Value: ns}, {Key: "cluster", Value: clusterName}}
+		testCreateCluster := &CreateClusterRequest{
+			Name:  clusterName,
+			Nodes: []string{"127.0.0.1:7770", "127.0.0.1:7771"},
+		}
+		body, err := json.Marshal(testCreateCluster)
+		require.NoError(t, err)
+		ctx.Request.Body = io.NopCloser(bytes.NewBuffer(body))
+		handler.Create(ctx)
+		require.Equal(t, http.StatusCreated, recorder.Code)
+		before, err := handler.s.GetCluster(ctx, ns, clusterName)
+		require.NoError(t, err)
+		require.EqualValues(t, store.SlotRange{Start: 0, Stop: 8191}, before.Shards[0].SlotRanges[0])
+		require.EqualValues(t, store.SlotRange{Start: 8192, Stop: store.MaxSlotID}, before.Shards[1].SlotRanges[0])
+
+		testMigrateReq := &MigrateSlotRequest{
+			Slot: 3,
+			// SlotOnly: true,
+			Target: 1,
+		}
+		body, err = json.Marshal(testMigrateReq)
+		require.NoError(t, err)
+		ctx.Request.Body = io.NopCloser(bytes.NewBuffer(body))
+		middleware.RequiredCluster(ctx)
+		handler.MigrateSlot(ctx)
+		require.Equal(t, http.StatusOK, recorder.Code)
+		after, err := handler.s.GetCluster(ctx, ns, clusterName)
+		require.NoError(t, err)
+
+		require.EqualValues(t, before.Version.Add(1), after.Version.Load())
+		require.Len(t, after.Shards[0].SlotRanges, 2)
+		require.EqualValues(t, store.SlotRange{Start: 0, Stop: 2}, after.Shards[0].SlotRanges[0])
+		require.EqualValues(t, store.SlotRange{Start: 4, Stop: 8191}, after.Shards[0].SlotRanges[1])
+		require.Len(t, after.Shards[1].SlotRanges, 2)
+		require.EqualValues(t, store.SlotRange{Start: 3, Stop: 3}, after.Shards[1].SlotRanges[0])
+		require.EqualValues(t, store.SlotRange{Start: 8192, Stop: store.MaxSlotID}, after.Shards[1].SlotRanges[1])
+	})
+
 	t.Run("remove cluster", func(t *testing.T) {
 		runRemove(t, "test-cluster", http.StatusNoContent)
 		runRemove(t, "not-exist", http.StatusNotFound)
 	})
-
 }
 
 func TestClusterImport(t *testing.T) {
@@ -255,7 +298,8 @@ func TestClusterMigrateData(t *testing.T) {
 		FailOver: &config.FailOverConfig{
 			PingIntervalSeconds: 1,
 			MaxPingCount:        3,
-		}})
+		},
+	})
 	require.NoError(t, err)
 	require.NoError(t, ctrl.Start(ctx))
 	ctrl.WaitForReady()

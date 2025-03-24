@@ -132,7 +132,8 @@ func (cluster *Cluster) RemoveNode(shardIndex int, nodeID string) error {
 }
 
 func (cluster *Cluster) PromoteNewMaster(ctx context.Context,
-	shardIdx int, masterNodeID, preferredNodeID string) (string, error) {
+	shardIdx int, masterNodeID, preferredNodeID string,
+) (string, error) {
 	shard, err := cluster.GetShard(shardIdx)
 	if err != nil {
 		return "", err
@@ -222,6 +223,7 @@ func (cluster *Cluster) MigrateSlot(ctx context.Context, slot int, targetShardId
 	}
 	targetNodeID := cluster.Shards[targetShardIdx].GetMasterNode().ID()
 	if err := sourceMasterNode.MigrateSlot(ctx, slot, targetNodeID); err != nil {
+		fmt.Printf("slot: %v, targetNodeID: %v, migration error: %v\n", slot, targetNodeID, err)
 		return err
 	}
 

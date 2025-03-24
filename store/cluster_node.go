@@ -250,6 +250,7 @@ func (n *ClusterNode) SyncClusterInfo(ctx context.Context, cluster *Cluster) err
 	fmt.Printf("!!setting node id: %v\n", n.id)
 	err = redisCli.Do(ctx, "CLUSTERX", "SETNODEID", n.id).Err()
 	if err != nil {
+		fmt.Printf("got error setting node: %v", err)
 		return err
 	}
 	return redisCli.Do(ctx, "CLUSTERX", "SETNODES", clusterStr, cluster.Version.Load()).Err()

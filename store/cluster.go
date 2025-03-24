@@ -65,6 +65,7 @@ func NewCluster(name string, nodes []string, replicas int) (*Cluster, error) {
 				role = RoleSlave
 			}
 			node := NewClusterNode(addr, "")
+			fmt.Printf("created cluster node: %v, addr: %v\n", node.id, node.addr)
 			node.SetRole(role)
 			shard.Nodes = append(shard.Nodes, node)
 		}

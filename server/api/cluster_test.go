@@ -179,7 +179,12 @@ func TestClusterBasics(t *testing.T) {
 		require.NoError(t, err)
 		require.EqualValues(t, store.SlotRange{Start: 0, Stop: 8191}, before.Shards[0].SlotRanges[0])
 		require.EqualValues(t, store.SlotRange{Start: 8192, Stop: store.MaxSlotID}, before.Shards[1].SlotRanges[0])
+		before.SyncToNodes(ctx)
 
+		recorder = httptest.NewRecorder()
+		ctx = GetTestContext(recorder)
+		ctx.Set(consts.ContextKeyStore, handler.s)
+		ctx.Params = []gin.Param{{Key: "namespace", Value: ns}, {Key: "cluster", Value: clusterName}}
 		testMigrateReq := &MigrateSlotRequest{
 			Slot: 3,
 			// SlotOnly: true,

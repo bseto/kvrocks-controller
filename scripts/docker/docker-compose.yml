@@ -19,16 +19,90 @@
 version: "3.7"
 
 services:
-  kvrocks0:
-    build: ./kvrocks
-    container_name: kvrocks-cluster
+  kvrocks1:
+    image: "apache/kvrocks:nightly"
+    networks:
+      - kvrocks-dev
+    container_name: kvrocks1
     ports:
-      - "7770:7770"
-      - "7771:7771"
+      - "6001:6001"
+    entrypoint:
+      - kvrocks
+      - "--bind"
+      - "0.0.0.0"
+      - "--port"
+      - "6001"
+      - "--cluster-enabled"
+      - "yes"
 
+  kvrocks2:
+    image: "apache/kvrocks:nightly"
+    networks:
+      - kvrocks-dev
+    container_name: kvrocks2
+    ports:
+      - "6002:6002"
+    entrypoint:
+      - kvrocks
+      - "--bind"
+      - "0.0.0.0"
+      - "--port"
+      - "6002"
+      - "--cluster-enabled"
+      - "yes"
+
+  kvrocks3:
+    image: "apache/kvrocks:nightly"
+    networks:
+      - kvrocks-dev
+    container_name: kvrocks3
+    ports:
+      - "6003:6003"
+    entrypoint:
+      - kvrocks
+      - "--bind"
+      - "0.0.0.0"
+      - "--port"
+      - "6003"
+      - "--cluster-enabled"
+      - "yes"
+
+  kvrocks4:
+    image: "apache/kvrocks:nightly"
+    networks:
+      - kvrocks-dev
+    container_name: kvrocks4
+    ports:
+      - "6004:6004"
+    entrypoint:
+      - kvrocks
+      - "--bind"
+      - "0.0.0.0"
+      - "--port"
+      - "6004"
+      - "--cluster-enabled"
+      - "yes"
+
+  kvrocks5:
+    image: "apache/kvrocks:nightly"
+    networks:
+      - kvrocks-dev
+    container_name: kvrocks5
+    ports:
+      - "6005:6005"
+    entrypoint:
+      - kvrocks
+      - "--bind"
+      - "0.0.0.0"
+      - "--port"
+      - "6005"
+      - "--cluster-enabled"
+      - "yes"
 
   etcd0:
     image: "quay.io/coreos/etcd:v3.5.17"
+    networks:
+      - kvrocks-dev
     container_name: etcd0
     ports:
       - "2380:2380"
@@ -46,12 +120,16 @@ services:
 
   zookeeper0:
     image: "zookeeper:latest"
+    networks:
+      - kvrocks-dev
     container_name: zookeeper0
     ports:
       - "2181:2181"
 
   consul0:
     image: hashicorp/consul:latest
+    networks:
+      - kvrocks-dev
     container_name: consul0
     ports:
       - "8500:8500"
@@ -68,3 +146,7 @@ services:
       - "5432:5432"
     volumes:
       - ./pg-init-scripts:/docker-entrypoint-initdb.d
+
+networks:
+  kvrocks-dev:
+    external: true

@@ -28,7 +28,7 @@ storage_type: consul
 consul:
   addrs:
     - "consul0:8500"
-  elect_path: "testing/paths"
+  elect_path:
   tls:
     enable: false
     cert_file:

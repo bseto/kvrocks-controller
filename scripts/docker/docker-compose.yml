@@ -19,6 +19,22 @@
 version: "3.7"
 
 services:
+  kvrocks0:
+    image: "apache/kvrocks:nightly"
+    networks:
+      - kvrocks-dev
+    container_name: kvrocks0
+    ports:
+      - "6000:6000"
+    entrypoint:
+      - kvrocks
+      - "--bind"
+      - "0.0.0.0"
+      - "--port"
+      - "6000"
+      - "--cluster-enabled"
+      - "yes"
+
   kvrocks1:
     image: "apache/kvrocks:nightly"
     networks:
